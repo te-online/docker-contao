@@ -20,17 +20,25 @@ plus maybe other configuration files in `system/config/` and `app/config/`...
 
 ### Simple Example
 
-Let's say you keep your files in `$PATH` and your personalised Docker image is called `conato-personalised`, then you would run your website as:
+Let's say you keep your files in `$CONTAO_PATH` and your personalised Docker image is called `conato-personalised`, then you would run your website as:
 
     docker run --rm -it \
         -p 8080:80 \
-        -v $PATH/files/:/var/www/html/files/ \
-        -v $PATH/templates/:/var/www/html/templates/ \
-        -v $PATH/system/config/localconfig.php:/var/www/html/system/config/localconfig.php \
-        -v $PATH/app/config/parameters.yml:/var/www/html/app/config/parameters.yml \
+        -v $CONTAO_PATH/files/:/var/www/html/files/ \
+        -v $CONTAO_PATH/templates/:/var/www/html/templates/ \
+        -v $CONTAO_PATH/system/config/localconfig.php:/var/www/html/system/config/localconfig.php \
+        -v $CONTAO_PATH/app/config/parameters.yml:/var/www/html/app/config/parameters.yml \
         conato-personalised
 
-This basically mounts your files from `PATH` to the proper locations in `/var/www/html` of the container and bind its port `80` to port `8080` of your server. Thus, you should be able to access the Contao instance at `example.com:8080`.
+This basically mounts your files from `CONTAO_PATH` to the proper locations in `/var/www/html` of the container and bind its port `80` to port `8080` of your server. Thus, you should be able to access the Contao instance at `example.com:8080`.
+
+#### About mounting of config files
+
+Take note that `$CONTAO_PATH/system/config/localconfig.php` and `$CONTAO_PATH/app/config/parameters.yml` need to exist on your local machine. Otherwise docker might create them as directories. If you mount existing or empty config files, you might need to attach to the container once it's running to adjust permissions on those files (This is a short command to do just that `docker exec -it $(docker ps -aqf "name=app") bash -c 'chown www-data:www-data /var/www/html/app/config/parameters.yml && chown www-data:www-data /var/www/html/system/config/localconfig.php'`). Otherwise contao will not be able to install, because it cannot overwrite or read the files.
+
+If you want to start with a fresh install and you're okay with using a docker-volume to store your config files, you can just omit mounting the config files.
+
+#### Database
 
 Depending on your configuration you may want to link a MySQL container etc.
 
@@ -38,11 +46,11 @@ Depending on your configuration you may want to link a MySQL container etc.
 
 ### Using Docker-Compose and a MySQL Database
 
-Let's again say your individual data is stored in `$PATH` and you want to run the website using a MySQL database, then you can compose the following containers
+Let's again say your individual data is stored in `$CONTAO_PATH` and you want to run the website using a MySQL database, then you can compose the following containers
 
 	version: '2'
 	services:
-	    
+
 	    contao:
 	      build: /path/to/personalised/Dockerfile
 	      restart: unless-stopped
@@ -52,11 +60,11 @@ Let's again say your individual data is stored in `$PATH` and you want to run th
 	      ports:
 	        - "8080:80"
 	      volumes:
-	        - $PATH/files:/var/www/html/files
-	        - $PATH/templates:/var/www/html/templates:ro
-	        - $PATH/system/config/localconfig.php:/var/www/html/system/config/localconfig.php
-	        - $PATH/app/config/parameters.yml:/var/www/html/app/config/parameters.yml
-	    
+	        - $CONTAO_PATH/files:/var/www/html/files
+	        - $CONTAO_PATH/templates:/var/www/html/templates:ro
+	        - $CONTAO_PATH/system/config/localconfig.php:/var/www/html/system/config/localconfig.php
+	        - $CONTAO_PATH/app/config/parameters.yml:/var/www/html/app/config/parameters.yml
+
 	    contao_db:
 	      image: mariadb
 	      restart: always
@@ -67,14 +75,16 @@ Let's again say your individual data is stored in `$PATH` and you want to run th
 	        MYSQL_PASSWORD: contao_password
 	        MYSQL_ROOT_PASSWORD: very_secret
 	      volumes:
-	        - $PATH/database:/var/lib/mysql
+	        - $CONTAO_PATH/database:/var/lib/mysql
 
 This will create 2 containers:
 
 * `contao` based on this image, all user-based files are mounted into the proper locations
 * `contao_db` a [MariaDB](https://hub.docker.com/_/mariadb/) to provide a MySQL server
 
-To make Contao speak to the MariaDB server you need to configure the database connection in `$PATH/app/config/parameters.yml` just like:
+#### Prefill database configuration (instead of using installer)
+
+To make Contao speak to the MariaDB server you need to configure the database connection in `$CONTAO_PATH/app/config/parameters.yml` just like:
 
     parameters:
         database_host: contao_db
@@ -87,6 +97,7 @@ To make Contao speak to the MariaDB server you need to configure the database co
 
 Here, the database should be accessible at `contao_db:3306`, as it is setup in the compose file above.
 
+#### Apache configuration
 
 If you're running contao with "Rewrite URLs" using an `.htaccess` you also need to update [Apache](https://httpd.apache.org/)'s configuration to allow for rewrites. Thus, you may for example mount the follwoing file to `/etc/apache2/sites-available/000-default.conf`:
 
@@ -102,7 +113,6 @@ If you're running contao with "Rewrite URLs" using an `.htaccess` you also need 
 	</VirtualHost>
 
 This tells Apache to allow everything in any `.htaccess` file in `/var/www`.
-
 
 ### Mail support
 
@@ -132,17 +142,17 @@ For more information read [the documentation in my blog](https://binfalse.de/201
 
 	Docker Image for Contao
 	Copyright (C) 2019 Martin Scharm <https://binfalse.de/contact/>
-	
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
