@@ -1,5 +1,5 @@
 FROM php:7-apache
-MAINTAINER martin scharm <https://binfalse.de/contact/>
+LABEL maintainer="martin scharm <https://binfalse.de/contact/>"
 
 # for mail configuration see https://binfalse.de/2016/11/25/mail-support-for-docker-s-php-fpm/
 

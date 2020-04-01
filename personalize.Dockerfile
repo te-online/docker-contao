@@ -1,5 +1,5 @@
 FROM binfalse/contao:latest
-MAINTAINER martin scharm <https://binfalse.de/contact/>
+LABEL maintainer="martin scharm <https://binfalse.de/contact/>"
 
 USER www-data
 
