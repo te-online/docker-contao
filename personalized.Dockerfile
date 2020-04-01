@@ -4,6 +4,7 @@ LABEL maintainer="martin scharm <https://binfalse.de/contact/>"
 USER www-data
 
 # install required modules, e.g. we're using metamodels
+# NOTE: This is just an example. Replace with a list of modules your site is using
 RUN php -d memory_limit=-1 /composer/composer.phar require metamodels/bundle_all contao-bootstrap/bundle
 
 # clear contao cache to re-read our configuration when a container is spawned
