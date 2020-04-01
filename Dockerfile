@@ -37,7 +37,10 @@ ADD install-composer.sh /install-composer.sh
 RUN bash /install-composer.sh \
  && chown -R www-data: /var/www
 
-# chaneg the user and install contao 4
+# change the user and install contao 4
 USER www-data
 RUN php -d memory_limit=-1 /composer/composer.phar create-project contao/managed-edition /var/www/html '4.4.*'
+
+# Change back to root to allow container to be run as a standalone container
+USER root
 
