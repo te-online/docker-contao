@@ -14,7 +14,7 @@ RUN php -q -d memory_limit=-1 /var/www/html/vendor/contao/manager-bundle/bin/con
 # best option is apparently to inject the following very early:
 #      $_SERVER["HTTPS"] = 1;
 # see also https://github.com/contao/core-bundle/issues/895#issuecomment-347662604
-RUN sed -i.bak 's%/\*%$_SERVER["HTTPS"] = 1;/*%' /var/www/html/web/app.php && rm /var/www/html/web/app.php.bak
+RUN sed -i 's%/\*\*%$_SERVER["HTTPS"] = 1;\n/**%' /var/www/html/web/app.php
 
 # make files public
 # the root is now in ~/web... so we need to create a link ~/web/files -> ~/files
