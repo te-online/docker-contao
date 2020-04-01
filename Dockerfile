@@ -44,6 +44,5 @@ RUN php -d memory_limit=-1 /composer/composer.phar create-project contao/managed
 # Change back to root to allow container to be run as a standalone container
 USER root
 
-# Change webroot to correct directory for latest contao versions.
-RUN sed -i 's#/var/www/html#/var/www/html/web#g' /etc/apache2/sites-enabled/000-default.conf
-
+# Copy default Apache config that works for contao
+COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
